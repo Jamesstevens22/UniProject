@@ -1,63 +1,64 @@
 <?php
 // Include config file
 require_once 'php/config.php';
- 
-// Define variables and initialize with empty values
+session_start();
+
+if(!isset($_SESSION['username']) || empty($_SESSION['username'])){
+  $logged = '<a href="login.php"><span class="glyphicon glyphicon-user"></span> Login';
+  $sign = '<a href="register.php"><span class="glyphicon glyphicon-log-in"></span> Sign Up';
+}
+else{
+  $sign = '<a href="profile.php"> Profile';
+  $logged = '<a href="logout.php"> Logout';
+}
 $username = $password = "";
 $username_err = $password_err = "";
  
-// Processing form data when form is submitted
+// When the user clicks login
 if($_SERVER["REQUEST_METHOD"] == "POST"){
  
-    // Check if username is empty
+    // See if the username box is empty
     if(empty(trim($_POST["username"]))){
         $username_err = 'Please enter username.';
     } else{
         $username = trim($_POST["username"]);
     }
     
-    // Check if password is empty
+    // See if the password box is empty
     if(empty(trim($_POST['password']))){
         $password_err = 'Please enter your password.';
     } else{
         $password = trim($_POST['password']);
     }
     
-    // Validate credentials
+    // Validate
     if(empty($username_err) && empty($password_err)){
         // Prepare a select statement
         $sql = "SELECT username, password FROM users WHERE username = ?";
         
         if($stmt = mysqli_prepare($link, $sql)){
-            // Bind variables to the prepared statement as parameters
             mysqli_stmt_bind_param($stmt, "s", $param_username);
             
-            // Set parameters
+
             $param_username = $username;
             
-            // Attempt to execute the prepared statement
             if(mysqli_stmt_execute($stmt)){
-                // Store result
                 mysqli_stmt_store_result($stmt);
                 
-                // Check if username exists, if yes then verify password
-                if(mysqli_stmt_num_rows($stmt) == 1){                    
-                    // Bind result variables
+                if(mysqli_stmt_num_rows($stmt) == 1){ 
                     mysqli_stmt_bind_result($stmt, $username, $hashed_password);
                     if(mysqli_stmt_fetch($stmt)){
                         if(password_verify($password, $hashed_password)){
-                            /* Password is correct, so start a new session and
-                            save the username to the session */
                             session_start();
                             $_SESSION['username'] = $username;      
-                            header("location: welcome.php");
+                            header("location: profile.php");
                         } else{
-                            // Display an error message if password is not valid
+                            // Password Error
                             $password_err = 'The password you entered was not valid.';
                         }
                     }
                 } else{
-                    // Display an error message if username doesn't exist
+                    // Username error
                     $username_err = 'No account found with that username.';
                 }
             } else{
@@ -65,11 +66,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             }
         }
         
-        // Close statement
         mysqli_stmt_close($stmt);
     }
     
-    // Close connection
     mysqli_close($link);
 }
 ?>
@@ -77,7 +76,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Bootstrap Example</title>
+  <title>Login</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -95,26 +94,21 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>                        
       </button>
-      <a class="navbar-brand" href="#">WebSiteName</a>
+      <a class="navbar-brand" href="#">Drone Managment System</a>
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav">
-        <li><a href="#">Home</a></li>
-        <li class="dropdown">
-          <a class="dropdown-toggle" data-toggle="dropdown" href="#">Page 1 <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="#">Page 1-1</a></li>
-            <li><a href="#">Page 1-2</a></li>
-            <li><a href="#">Page 1-3</a></li>
-          </ul>
-        </li>
-        <li><a href="#">Page 2</a></li>
-        <li><a href="#">Page 3</a></li>
+        <li><a href="index.php">Home</a></li>
+        <li><a href="newflight.php">New Flight</a></li>
+        <li><a href="weather.php">Weather</a></li>
+        <li><a href="map.php">Map</a></li>
+        <li><a href="notam.php">NOTAM's</a></li>
+        <li><a href="risk.php">Risk Assessment</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
-        <li class="active"><a href="login.php"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
-      </ul>
+      <li><?php echo $sign ?></a></li>
+      <li><?php echo $logged ?></a></li>
+    </ul>
     </div>
   </div>
 </nav>
@@ -147,6 +141,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             </div>
         </div>
     </div>
-<footer>Hey, I'm the fixed footer :)</footer>
+<footer><?php include 'php/footer.php'?></footer>
 </body>
 </html>

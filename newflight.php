@@ -1,48 +1,70 @@
 <?php
-// Initialize the session
+require_once 'php/config.php';
 session_start();
- 
+
+$sesid = $_SESSION['username'];
+if(!isset($_SESSION['username']) || empty($_SESSION['username'])){
+  $logged = '<a href="login.php"><span class="glyphicon glyphicon-user"></span> Login';
+  $sign = '<a href="register.php"><span class="glyphicon glyphicon-log-in"></span> Sign Up';
+}
+else{
+  $sign = '<a href="profile.php"> Profile';
+  $logged = '<a href="logout.php"> Logout';
+}
 // If session variable is not set it will redirect to login page
 if(!isset($_SESSION['username']) || empty($_SESSION['username'])){
   header("location: login.php");
   exit;
 }
+
+
+
+if (isset($_POST['submit'])){
+    
+        $prop = $_POST['prop'];
+        $date_of_mission = $_POST["date_of_mission"];
+        $loc_of_mission = $_POST['loc_of_mis'];
+        $tech_aims = $_POST['tech_aims'];
+        $des_of_mis = $_POST['des_of_mis'];
+        $des_of_pay = $_POST['des_of_pay'];
+        $des_of_pro = $_POST['des_of_pro'];
+        $num_of_ob = $_POST['num_of_ob'];
+        $pay_req = $_POST['pay_req'];
+        $rpas_req = $_POST['rpas_req'];
+
+        $idselect = "SELECT id from users where username='$sesid'";
+    
+        $idresult = mysqli_query($link,$idselect);
+        $result = mysqli_fetch_array($idresult);
+        $id = $result['id'];
+
+
+
+
+
+    
+        $sqlinsert = "INSERT into newflight(id,prop,date_of_mission,loc_of_mis,tech_aims,des_of_mis,des_of_pay,des_of_pro,num_of_ob,pay_req,rpas_req) 
+                        values ('$id','$prop','$date_of_mission','$loc_of_mission','$tech_aims','$des_of_mis','$des_of_pay', '$des_of_pro','$num_of_ob','$pay_req','$rpas_req')";
+        
+        mysqli_query($link, $sqlinsert);
+        $sucess = "Flight Submitted!";
+        header("location: profile.php");
+    
+    
+    }
 ?>
  
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Welcome</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css">
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD-iYd8PrGX4e-3Ni1UT0dL9X0SQGLhnD4&libraries=drawing"></script>
-    <script>var map;
-        function initialize() {
-        var myLatlng = new google.maps.LatLng(41.38,2.18);
-
-        var myOptions = {
-        zoom: 13,
-        center: myLatlng,
-        mapTypeId: google.maps.MapTypeId.ROADMAP
-        }
-        map = new google.maps.Map(document.getElementById("map-canvas"), myOptions);
-
-        var marker = new google.maps.Marker({
-        draggable: true,
-        position: myLatlng,
-        map: map,
-        title: "Your location"
-        });
-
-        google.maps.event.addListener(map, 'click', function(event) {
-            
-            alert(event.latLng);
-        });
-        }
-
-        google.maps.event.addDomListener(window, 'load', initialize);
-    </script>
+    <title>New Flight</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/main.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <style type="text/css">
 
         #map {
@@ -66,14 +88,17 @@ if(!isset($_SESSION['username']) || empty($_SESSION['username'])){
   </div>
   <div class="collapse navbar-collapse" id="myNavbar">
     <ul class="nav navbar-nav">
-      <li class="active"><a href="index.html">Home</a></li>
-      <li><a href="#">Page 2</a></li>
-      <li><a href="#">Page 3</a></li>
+      <li><a href="index.php">Home</a></li>
+      <li class="active"><a href="newflight.php">New Flight</a></li>
+      <li><a href="weather.php">Weather</a></li>
+      <li><a href="map.php">Map</a></li>
+      <li><a href="notam.php">NOTAM's</a></li>
+        <li><a href="risk.php">Risk Assessment</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
-      <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
-      <li><a href="login.php"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
-    </ul>
+    <li><?php echo $sign ?></a></li>
+    <li><?php echo $logged ?></a></li>
+  </ul>
   </div>
 </div>
 </nav>
@@ -85,51 +110,51 @@ if(!isset($_SESSION['username']) || empty($_SESSION['username'])){
     <div class="col-8 col-md-8">
         <h2>Part A - Mission Plan</h2>
         <p>Please fill out the information below.</p>
-        <form>
+        <form action="" method="POST">
             <div class="form-group">
                 <label>Mission Proposers:</label>
-                <input type="text" name="Name"class="form-control">
+                <input type="text" class="form-control" name="prop">
             </div> 
             <div class="form-group">
                 <label>Date of Proposed Mission</label>
-                <input type="date" name="Name"class="form-control">
+                <input type="text" class="form-control" name="date_of_mission">
             </div>   
             <div class="form-group">
                 <label>Location of Mission</label>
-                <input type="text" name="Name"class="form-control">
+                <input type="text"class="form-control" name="loc_of_mis">
             </div> 
             <div class="form-group">
                 <label>Principal Technical Aims of the Mission:</label>
-                <textarea class="form-control" rows="5"></textarea>
+                <textarea class="form-control" rows="5" name="tech_aims"></textarea>
             </div>
             <div class="form-group">
                 <label>Provide Detailed description of the mission, including estimated flight durations:</label>
-                <textarea class="form-control" rows="7"></textarea>
+                <textarea class="form-control" rows="7" name="des_of_mis"></textarea>
             </div>
 
             <div class="form-group">
                 <label>Describe the Payload Requirements:</label>
-                <textarea class="form-control" rows="3"></textarea>
+                <textarea class="form-control" rows="3" name="des_of_pay"></textarea>
             </div>
             <div class="form-group">
                 <label>Describe the Data processing plan:</label>
-                <textarea class="form-control" rows="3"></textarea>
+                <textarea class="form-control" rows="3" name="des_of_pro"></textarea>
             </div>
             <div class="form-group">
                 <label>Number of Observers:</label>
-                <input type="number" name="Name"class="form-control">
+                <input type="text" class="form-control" name="num_of_ob">
             </div>
             <div class="form-group">
                 <label>Is a payload master required?:</label>
-                <input type="text" name="Name"class="form-control">
+                <input type="text" class="form-control" name="pay_req">
             </div>
             <div class="form-group">
                 <label>RPAS Required:</label>
-                <input type="text" name="Name"class="form-control">
+                <input type="text" class="form-control" name="rpas_req">
             </div>
 
             <div class="form-group">
-                <input type="submit" class="btn btn-primary" value="Submit">
+                <input type="submit" class="btn btn-primary" value="submit" name="submit">
             </div>
         </form>
     </div>
@@ -137,7 +162,5 @@ if(!isset($_SESSION['username']) || empty($_SESSION['username'])){
     </div>
 </div>
 </div>
-<footer>Hey, I'm the fixed footer :)</footer>
+<footer><?php include 'php/footer.php'?></footer>
 </html>
-
-AIzaSyD-iYd8PrGX4e-3Ni1UT0dL9X0SQGLhnD4
